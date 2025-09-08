@@ -17,10 +17,11 @@ import {
     deleteEvent,
 } from '../services/api';
 import { useUndoShortcut, useRedoShortcut } from '../hooks/keyboardShortcuts.js';
-import './Calendar.css';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useUndoRedo } from '../hooks/useUndoRedo.js';
+import './Calendar.css';
+import { useEventDragResize } from '../hooks/useEventDragResize.js';  
 
 // Set the default timezone for all Luxon DateTime operations in this component.
 Settings.defaultZone = 'local';
@@ -413,8 +414,7 @@ const App = () => {
                 link: eventData.link || null,
                 frequency: eventData.frequency || 'never',
                 frequency_total: eventData.frequency_total || null,
-            };
-            
+            }
             await saveEvent(eventId, payload);
 
             // Commit the edit action with both original and updated states.
@@ -480,60 +480,8 @@ const App = () => {
 
     // --- FULLCALENDAR CALLBACKS ---
 
-    /**
-     * Handles drag-and-drop operations for an event.
-     * Wrapped in useCallback for performance optimization.
-     */
-    const onEventDrop = useCallback(
-        (info) => {
-            const { event } = info;
-            const duration = (event.end.getTime() - event.start.getTime()) / (1000 * 60);
-
-            const datetime = DateTime.fromJSDate(event.start)
-                .setZone(selectedTimezone, { keepLocalTime: true })
-                .toISO();
-
-            const updatedEvent = {
-                ...event.extendedProps,
-                id: event.id,
-                title: event.title,
-                datetime: datetime,
-                duration: duration,
-                notes: event.extendedProps.notes,
-                link: event.extendedProps.link,
-            };
-            // Drag-and-drop always affects a single instance.
-            saveEventAndCommit(updatedEvent, 'single');
-        },
-        [saveEventAndCommit, selectedTimezone]
-    );
-
-    /**
-     * Handles resizing an event.
-     * Wrapped in useCallback for performance optimization.
-     */
-    const onEventResize = useCallback(
-        (info) => {
-            const { event } = info;
-            const duration = (event.end.getTime() - event.start.getTime()) / (1000 * 60);
-
-            const datetime = DateTime.fromJSDate(event.start)
-                .setZone(selectedTimezone, { keepLocalTime: true })
-                .toISO();
-            const updatedEvent = {
-                ...event.extendedProps,
-                id: event.id,
-                title: event.title,
-                datetime: datetime,
-                duration: duration,
-                notes: event.extendedProps.notes,
-                link: event.extendedProps.link,
-            };
-            // Resizing always affects a single instance.
-            saveEventAndCommit(updatedEvent, 'single');
-        },
-        [saveEventAndCommit, selectedTimezone]
-    );
+    // Handles event drag and drop and resizing
+    const { onEventDrop, onEventResize } = useEventDragResize(saveEventAndCommit, selectedTimezone);
 
     /**
      * Callback executed when the calendar's view or date range changes.
@@ -617,8 +565,7 @@ const App = () => {
                 eventContent={renderEventContent}
             />
         );
-    }, [events, referenceDate, onEventDrop, onEventResize, handleEventClick, handleDatesSet, selectedTimezone, currentView, slotDuration, renderEventContent]);
-
+    }, [events, referenceDate, handleEventClick, handleDatesSet, selectedTimezone, currentView, slotDuration, renderEventContent]);
 
     // --- RENDER ---
     
@@ -651,7 +598,26 @@ const App = () => {
                                         </button>
                                     }
                                     popperPlacement="bottom-start"
-                                />
+                                    calendarClassName="custom-date-picker"
+                                    firstDayOfWeek={1} // Monday
+                                    dayClassName={(date) => {
+                                    const day = DateTime.fromJSDate(date);
+
+                                    // Get the start/end of the selected week (Monday → Sunday)
+                                    const startOfWeek = referenceDate.startOf('week');
+                                    const endOfWeek = referenceDate.endOf('week');
+
+                                    // Only highlight days in the week containing the selected date
+                                    if (day >= startOfWeek && day <= endOfWeek) {
+                                    // Exclude days outside the current month
+                                    if (day.month === referenceDate.month && day.year === referenceDate.year) {
+                                        return 'week-selected';
+                                    }
+                                    }
+
+                                    return '';
+                                }}
+                                                                />
                             </div>
                             <span className="current-date">
                                 {referenceDate.startOf('week').toFormat('MMM d')} - {referenceDate.endOf('week').toFormat('MMM d, yyyy')}
@@ -688,7 +654,7 @@ const App = () => {
                     event={viewEvent}
                     onClose={() => setViewEvent(null)}
                     onEdit={event => { setEditEvent(event); setViewEvent(null); }}
-                    onDelete={deleteEventAndCommit}
+                    onDeleteEvent={deleteEventAndCommit}
                 />
                 <EditEventModal
                     isOpen={!!editEvent}

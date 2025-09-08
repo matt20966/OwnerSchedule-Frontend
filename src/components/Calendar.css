@@ -499,6 +499,8 @@ a:active {
   transition: stroke 0.2s ease;
 }
 
+
+
 /* ==================================== */
 /* 6. Responsive Adjustments            */
 /* ==================================== */
@@ -524,3 +526,20 @@ a:active {
     padding: 4px 8px;
   }
 }
+
+/* Highlight the entire week of the selected day */
+.custom-date-picker .week-selected {
+    background-color: #e6e6fa !important; /* Light purple fill */
+    border-radius: 0 !important;
+    color: #333 !important;
+}
+
+/* Optional: highlight today differently */
+.custom-date-picker .react-datepicker__day--today {
+    background-color: #6a6ad9 !important;
+    color: #fff !important;
+    font-weight: bold !important;
+    border-radius: 50% !important;
+}
+
+

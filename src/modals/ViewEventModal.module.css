@@ -237,3 +237,66 @@
 .copy-button:active {
   transform: scale(0.98);
 }
+
+/* New Dropdown Button container for Delete Button*/
+.dropdownContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.deleteButton {
+  background-color: #ef4444;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  font-family: inherit;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.deleteButton:hover {
+  background-color: #dc2626;
+  transform: translateY(-2px);
+}
+
+.deleteButton:active {
+  background-color: #b91c1c;
+  transform: translateY(0);
+}
+
+/* The Dropdown Menu for Delete */
+.dropdownContent {
+  position: absolute;
+  bottom: calc(100% + 12px); /* Positions the dropdown above the button */
+  right: 0;
+  background-color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  z-index: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  gap: 4px;
+}
+
+/* Individual dropdown menu items for delete options */
+.dropdownItem {
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  color: #000;
+}
+
+.dropdownItem:hover {
+  background-color: #f1f5f9;
+}
