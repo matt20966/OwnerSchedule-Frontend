@@ -1,32 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { DateTime } from 'luxon';
 import styles from './AddEditModal.module.css';
-
-/**
- * A reusable SVG component for a close or "X" icon.
- * This improves code clarity by abstracting the SVG markup.
- */
-const CloseIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
-
-/**
- * A helper component to consistently display validation error messages.
- * It renders nothing if no message is provided.
- * @param {object} props - The component props.
- * @param {string} props.message - The error message to display.
- */
-const ErrorText = ({ message }) => {
-    if (!message) return null;
-    return (
-        <p className={styles.errorText}>
-            {message}
-        </p>
-    );
-};
+import { CloseIcon, ErrorText } from "./UIComponents.jsx";
 
 /**
  * Helper function to determine if a given year is a leap year.

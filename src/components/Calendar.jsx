@@ -22,17 +22,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useUndoRedo } from '../hooks/useUndoRedo.js';
 import './Calendar.css';
 import { useEventDragResize } from '../hooks/useEventDragResize.js';  
+import { CloseIcon, ErrorText } from "../modals/UIComponents.jsx";
 
 // Set the default timezone for all Luxon DateTime operations in this component.
 Settings.defaultZone = 'local';
-
-// A simple SVG component for the close icon used in the banner.
-const CloseIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
 
 /**
  * A banner component to display success, error, or info messages.

@@ -2,17 +2,7 @@
 // such as timezone, calendar display options, and event durations.
 import React, { useState, useEffect } from 'react'; 
 import classes from './SettingsModal.module.css';
-/**
- * A simple, reusable SVG component for a close icon.
- * This improves readability and reusability over inline SVG paths.
- * @returns {JSX.Element} The Close Icon SVG.
- */
-const CloseIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
+import { CloseIcon, ErrorText } from "./UIComponents.jsx";
 
 /**
  * A utility function to fetch the UTC offset for a given timezone.
