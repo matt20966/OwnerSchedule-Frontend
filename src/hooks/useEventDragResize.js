@@ -1,27 +1,36 @@
+// useEventDragResize.js
+
 import { useCallback } from 'react';
 import { DateTime } from 'luxon';
 
 /**
  * A custom hook to encapsulate the logic for handling event drag and drop
  * and resizing events within a FullCalendar component.
- * * @param {function} saveEventAndCommit - A function to save the event to the backend and
+ * @param {function} saveEventAndCommit - A function to save the event to the backend and
  * commit the action for undo/redo history.
  * @param {string} selectedTimezone - The currently selected timezone.
+ * @param {function} onOpenSeriesModal - A callback to open the series modal for recurring events.
  * @returns {object} An object containing the onEventDrop and onEventResize callbacks.
  */
-export const useEventDragResize = (saveEventAndCommit, selectedTimezone) => {
+export const useEventDragResize = (saveEventAndCommit, selectedTimezone, onOpenSeriesModal) => {
 
     /**
      * Handles drag-and-drop operations for an event.
-     * It calculates the new duration and datetime and calls the save function.
      */
     const onEventDrop = useCallback(
         (info) => {
-            const { event } = info;
-            // Calculate duration in minutes.
-            const duration = (event.end.getTime() - event.start.getTime()) / (1000 * 60);
+            const { event, oldEvent } = info;
 
-            // Set the new datetime to the selected timezone, keeping local time.
+            // Check if the event is a recurring event by checking for a series_id
+            console.error(event.extendedProps.series);
+            if (event.extendedProps.series != null) {
+                onOpenSeriesModal(event);
+                info.revert(); // Revert the visual change until the user makes a choice in the modal
+                return;
+            }
+
+            // If it's a single, non-recurring event, save it immediately
+            const duration = (event.end.getTime() - event.start.getTime()) / (1000 * 60);
             const datetime = DateTime.fromJSDate(event.start)
                 .setZone(selectedTimezone, { keepLocalTime: true })
                 .toISO();
@@ -35,23 +44,25 @@ export const useEventDragResize = (saveEventAndCommit, selectedTimezone) => {
                 notes: event.extendedProps.notes,
                 link: event.extendedProps.link,
             };
-            // Drag-and-drop always affects a single instance.
             saveEventAndCommit(updatedEvent, 'single');
         },
-        [saveEventAndCommit, selectedTimezone]
+        [saveEventAndCommit, selectedTimezone, onOpenSeriesModal]
     );
 
     /**
      * Handles resizing an event.
-     * It calculates the new duration and datetime and calls the save function.
      */
     const onEventResize = useCallback(
         (info) => {
-            const { event } = info;
-            // Calculate duration in minutes.
+            const { event, oldEvent } = info;
+            // Check if the event is a recurring event by checking for a series_id
+            if (event.extendedProps.series != null) {
+                onOpenSeriesModal(event);
+                info.revert(); // Revert the visual change until the user makes a choice in the modal
+                return;
+            }
+            // If it's a single, non-recurring event, save it immediately
             const duration = (event.end.getTime() - event.start.getTime()) / (1000 * 60);
-
-            // Set the new datetime to the selected timezone, keeping local time.
             const datetime = DateTime.fromJSDate(event.start)
                 .setZone(selectedTimezone, { keepLocalTime: true })
                 .toISO();
@@ -64,10 +75,9 @@ export const useEventDragResize = (saveEventAndCommit, selectedTimezone) => {
                 notes: event.extendedProps.notes,
                 link: event.extendedProps.link,
             };
-            // Resizing always affects a single instance.
             saveEventAndCommit(updatedEvent, 'single');
         },
-        [saveEventAndCommit, selectedTimezone]
+        [saveEventAndCommit, selectedTimezone, onOpenSeriesModal]
     );
 
     return { onEventDrop, onEventResize };

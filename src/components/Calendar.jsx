@@ -1,3 +1,5 @@
+// App.jsx
+
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -8,6 +10,7 @@ import AddEventModal from '../modals/AddEventModal.jsx';
 import EditEventModal from '../modals/EditEventModal.jsx';
 import ViewEventModal from '../modals/ViewEventModal.jsx';
 import SettingsModal from '../modals/SettingsModal.jsx';
+import EditSeriesModal from '../modals/EditSeriesModal.jsx';
 import { DateTime, Settings } from 'luxon';
 import { parseDurationToMinutes, formatEventsForCalendar } from '../utils/utils.js';
 import {
@@ -21,8 +24,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useUndoRedo } from '../hooks/useUndoRedo.js';
 import './Calendar.css';
-import { useEventDragResize } from '../hooks/useEventDragResize.js';  
+import { useEventDragResize } from '../hooks/useEventDragResize.js';
 import { CloseIcon, ErrorText } from "../modals/UIComponents.jsx";
+
 
 // Set the default timezone for all Luxon DateTime operations in this component.
 Settings.defaultZone = 'local';
@@ -46,6 +50,7 @@ const Banner = ({ message, type, onClose }) => {
     );
 };
 
+
 const App = () => {
     // --- STATE MANAGEMENT ---
 
@@ -53,7 +58,7 @@ const App = () => {
     const [selectedTimezone, setSelectedTimezone] = useState('Europe/London');
     const [showExpanded, setShowExpanded] = useState(false); // For recurring events
     const [slotDuration, setSlotDuration] = useState(() => localStorage.getItem('slotDuration') || '00:30:00');
-    
+
     // The date that the calendar is currently centered on. Initialized to today.
     const [referenceDate, setReferenceDate] = useState(() => DateTime.local({ zone: selectedTimezone }).startOf('day'));
 
@@ -66,10 +71,12 @@ const App = () => {
     // State for managing the visibility of modals.
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModal] = useState(false);
+    const [isEditSeriesModalOpen, setIsEditSeriesModalOpen] = useState(false); // Set to false initially
     
     // State to hold the event object currently being viewed or edited.
     const [viewEvent, setViewEvent] = useState(null);
     const [editEvent, setEditEvent] = useState(null);
+    const [eventForSeriesModal, setEventForSeriesModal] = useState(null); // New state to hold event for series modal
 
     // State for the undo/redo history stacks. Each entry represents a user action.
     const [undoHistory, setUndoHistory] = useState([]);
@@ -77,7 +84,7 @@ const App = () => {
 
     // State for the notification banner.
     const [banner, setBanner] = useState({ message: '', type: '' });
-    
+
     // Stores the start and end dates of the current calendar view to trigger data fetching.
     const [viewDates, setViewDates] = useState({ start: null, end: null });
 
@@ -90,7 +97,6 @@ const App = () => {
     const utcOffsetInHours = useMemo(() => {
         return DateTime.local().setZone(selectedTimezone).offset / 60;
     }, [selectedTimezone]);
-
 
     // --- EFFECTS ---
 
@@ -269,7 +275,7 @@ const App = () => {
                 showBanner('Event re-created.', 'success');
                 // Move the action back to the undo history with the new ID.
                 setUndoHistory(prevHistory => [...prevHistory, { ...nextAction, eventId: newEvent.id }]);
-            
+
             } else if (nextAction.type === 'edit') {
                 // To redo an 'edit', we re-apply the updated event data.
                 const updatedEvent = nextAction.updatedEvent;
@@ -285,7 +291,7 @@ const App = () => {
                 showBanner('Event edit re-applied.', 'success');
                 // Move the action back to the undo history.
                 setUndoHistory(prevHistory => [...prevHistory, nextAction]);
-            
+
             } else if (nextAction.type === 'delete') {
                 // To redo a 'delete', we delete the event again.
                 const { eventId, scope } = nextAction;
@@ -334,12 +340,12 @@ const App = () => {
             } else if (event.frequency === 'fortnightly' && event.frequency_total) {
                 adjustedFrequencyTotal = Math.ceil(event.frequency_total / 14);
             }
-            
+
             // Adjust the datetime to the selected timezone before sending to the backend.
             const newIsoString = DateTime.fromISO(event.datetime)
-                                             .setZone(selectedTimezone, { keepLocalTime: true })
-                                             .toISO();
-                                             
+                .setZone(selectedTimezone, { keepLocalTime: true })
+                .toISO();
+
             const eventData = {
                 datetime: newIsoString,
                 title: event.title,
@@ -359,7 +365,7 @@ const App = () => {
             await fetchEventsCallback(viewDates.start, viewDates.end);
         } catch (err) {
             console.error('Error adding event:', err);
-            showBanner('Failed to add event.', 'error');
+            showBanner(`Failed to add event: ${err.message}`, 'error');
         }
     };
 
@@ -388,14 +394,14 @@ const App = () => {
                 notes: originalEvent.notes,
                 link: originalEvent.link,
             };
-            
+
             const hours = Math.floor(eventData.duration / 60);
             const minutes = eventData.duration % 60;
             const formattedDuration = `PT${hours}H${minutes}M`;
-            
+
             const newIsoString = DateTime.fromISO(eventData.datetime)
-                                             .setZone(selectedTimezone, { keepLocalTime: true })
-                                             .toISO();
+                .setZone(selectedTimezone, { keepLocalTime: true })
+                .toISO();
 
             // This payload structure matches the Django backend's `edit_event` action.
             const payload = {
@@ -419,6 +425,7 @@ const App = () => {
 
             setEditEvent(null);
             setViewEvent(null);
+            setIsEditSeriesModalOpen(false); // Close the series modal after the action is committed
             showBanner('Event updated successfully!', 'success');
             await fetchEventsCallback(viewDates.start, viewDates.end);
         } catch (err) {
@@ -435,7 +442,7 @@ const App = () => {
     const deleteEventAndCommit = async (eventId, scope = 'single') => {
         try {
             if (!eventId) throw new Error('Cannot delete event without an ID.');
-            
+
             // Find the event to get its data before deletion for the undo history.
             const eventToDelete = events.find(e => e.id === eventId);
             if (!eventToDelete) {
@@ -453,7 +460,7 @@ const App = () => {
                 frequency: eventToDelete.series_id ? (eventToDelete.extendedProps.frequency || null) : null,
                 frequency_total: eventToDelete.series_id ? (eventToDelete.extendedProps.frequency_total || null) : null,
             };
-            
+
             await deleteEvent(eventId, scope);
 
             // Commit the delete action.
@@ -470,11 +477,19 @@ const App = () => {
         }
     };
 
+    /**
+     * Handles opening the series modal.
+     * @param {object} event - The event object to pass to the modal.
+     */
+    const handleOpenSeriesModal = useCallback((event) => {
+        setEventForSeriesModal(event);
+        setIsEditSeriesModalOpen(true);
+    }, []);
 
     // --- FULLCALENDAR CALLBACKS ---
 
-    // Handles event drag and drop and resizing
-    const { onEventDrop, onEventResize } = useEventDragResize(saveEventAndCommit, selectedTimezone);
+    // Pass the new handleOpenSeriesModal callback to the custom hook
+    const { onEventDrop, onEventResize } = useEventDragResize(saveEventAndCommit, selectedTimezone, handleOpenSeriesModal);
 
     /**
      * Callback executed when the calendar's view or date range changes.
@@ -491,31 +506,31 @@ const App = () => {
         // Update the viewDates state, which triggers the useEffect to fetch new events.
         setViewDates({ start: dateInfo.start, end: dateInfo.end });
     }, []);
-    
+
     const renderEventContent = useCallback((eventInfo) => {
-    const slotDurationInMinutes = parseDurationToMinutes(slotDuration);
-    const hasConflict = eventInfo.event.extendedProps.hasConflict;
+        const slotDurationInMinutes = parseDurationToMinutes(slotDuration);
+        const hasConflict = eventInfo.event.extendedProps.hasConflict;
 
-    // Use a class name to style the event when it has a conflict.
-    const eventClassName = hasConflict ? 'fc-event-with-time has-conflict' : 'fc-event-with-time';
+        // Use a class name to style the event when it has a conflict.
+        const eventClassName = hasConflict ? 'fc-event-with-time has-conflict' : 'fc-event-with-time';
 
-    if (slotDurationInMinutes <= 15) {
+        if (slotDurationInMinutes <= 15) {
+            return (
+                <div className={`fc-event-main-content ${eventClassName}`}>
+                    <div className="fc-event-time">{eventInfo.timeText}</div>
+                    <div className="fc-event-title">{eventInfo.event.title}</div>
+                    {hasConflict && <div className="conflict-icon">⚠️</div>}
+                </div>
+            );
+        }
+
         return (
-            <div className={`fc-event-main-content ${eventClassName}`}>
-                <div className="fc-event-time">{eventInfo.timeText}</div>
+            <div className={`fc-event-main-content ${hasConflict ? 'has-conflict' : ''}`}>
                 <div className="fc-event-title">{eventInfo.event.title}</div>
                 {hasConflict && <div className="conflict-icon">⚠️</div>}
             </div>
         );
-    }
-    
-    return (
-        <div className={`fc-event-main-content ${hasConflict ? 'has-conflict' : ''}`}>
-            <div className="fc-event-title">{eventInfo.event.title}</div>
-            {hasConflict && <div className="conflict-icon">⚠️</div>}
-        </div>
-    );
-}, [slotDuration]);
+    }, [slotDuration]);
 
     /**
      * Memoizes the FullCalendar component to prevent it from re-rendering
@@ -561,7 +576,7 @@ const App = () => {
     }, [events, referenceDate, handleEventClick, handleDatesSet, selectedTimezone, currentView, slotDuration, renderEventContent]);
 
     // --- RENDER ---
-    
+
     return (
         <>
             <div className="calendar-container">
@@ -594,23 +609,23 @@ const App = () => {
                                     calendarClassName="custom-date-picker"
                                     firstDayOfWeek={1} // Monday
                                     dayClassName={(date) => {
-                                    const day = DateTime.fromJSDate(date);
+                                        const day = DateTime.fromJSDate(date);
 
-                                    // Get the start/end of the selected week (Monday → Sunday)
-                                    const startOfWeek = referenceDate.startOf('week');
-                                    const endOfWeek = referenceDate.endOf('week');
+                                        // Get the start/end of the selected week (Monday → Sunday)
+                                        const startOfWeek = referenceDate.startOf('week');
+                                        const endOfWeek = referenceDate.endOf('week');
 
-                                    // Only highlight days in the week containing the selected date
-                                    if (day >= startOfWeek && day <= endOfWeek) {
-                                    // Exclude days outside the current month
-                                    if (day.month === referenceDate.month && day.year === referenceDate.year) {
-                                        return 'week-selected';
-                                    }
-                                    }
+                                        // Only highlight days in the week containing the selected date
+                                        if (day >= startOfWeek && day <= endOfWeek) {
+                                            // Exclude days outside the current month
+                                            if (day.month === referenceDate.month && day.year === referenceDate.year) {
+                                                return 'week-selected';
+                                            }
+                                        }
 
-                                    return '';
-                                }}
-                                                                />
+                                        return '';
+                                    }}
+                                />
                             </div>
                             <span className="current-date">
                                 {referenceDate.startOf('week').toFormat('MMM d')} - {referenceDate.endOf('week').toFormat('MMM d, yyyy')}
@@ -632,7 +647,7 @@ const App = () => {
                         </button>
                     </div>
                 </div>
-                
+
                 {/* The memoized calendar instance */}
                 {MemoizedCalendar}
 
@@ -661,6 +676,26 @@ const App = () => {
                     onClose={() => setIsSettingsModal(false)}
                     onSave={handleSaveSettings}
                     currentSettings={{ timezone: selectedTimezone, showExpanded: showExpanded, slotDuration: slotDuration }}
+                />
+                <EditSeriesModal
+                    isOpen={isEditSeriesModalOpen}
+                    onCancel={() => setIsEditSeriesModalOpen(false)}
+                    event={eventForSeriesModal} // Pass the event state to the modal
+                    onConfirm={(editType) => {
+                        // This function is for handling the user's choice inside the modal
+                        const updatedEvent = {
+                            id: eventForSeriesModal.id,
+                            title: eventForSeriesModal.title,
+                            // Use the start date from the moved/resized event
+                            datetime: DateTime.fromJSDate(eventForSeriesModal.start).setZone(selectedTimezone, { keepLocalTime: true }).toISO(),
+                            // Calculate the new duration
+                            duration: (eventForSeriesModal.end.getTime() - eventForSeriesModal.start.getTime()) / (1000 * 60),
+                            notes: eventForSeriesModal.extendedProps.notes,
+                            link: eventForSeriesModal.extendedProps.link,
+                        };
+                        saveEventAndCommit(updatedEvent, editType);
+                        // The saveEventAndCommit function will close the modal upon success
+                    }}
                 />
             </div>
         </>

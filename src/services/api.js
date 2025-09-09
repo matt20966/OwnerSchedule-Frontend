@@ -55,7 +55,9 @@ export const addEvent = async (eventPayload) => {
         return handleResponse(response);
     } catch (err) {
         console.error('Error adding event:', err.message);
-        throw err;
+        // On failure, return an error object with the message
+        return { success: false, error: err.message };
+
     }
 };
 
@@ -66,7 +68,6 @@ export const addEvent = async (eventPayload) => {
  * @returns {Promise<Object>} A promise that resolves with the updated event data.
  */
 export const saveEvent = async (eventId, payload) => {
-  console.error("saveEvent called with:", eventId, payload);
     try {
         // The URL points to the custom 'edit' action for the specific event.
         const response = await fetch(`${API_BASE_URL}/${eventId}/edit/`, {
