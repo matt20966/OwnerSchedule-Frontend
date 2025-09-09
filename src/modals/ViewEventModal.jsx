@@ -101,6 +101,7 @@ function formatWithOrdinal(dt) {
         return "No recurring event";
     }
   };
+
   const isRecurring = !!event.series;
   return (
     <div className={classes.overlay} onClick={onClose}>
