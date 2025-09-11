@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://127.0.0.1:8000/api/schedules';
+//const API_BASE_URL = 'http://127.0.0.1:8000/api/schedules';   <-- This is for development only
+const API_BASE_URL = "https://web-production-b1e5.up.railway.app/api/schedules";
+console.log(API_BASE_URL);
 
 /**
  * A helper function to handle API responses and errors consistently.

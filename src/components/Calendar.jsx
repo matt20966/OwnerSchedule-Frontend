@@ -384,7 +384,7 @@ const App = () => {
                 showBanner('Original event not found.', 'error');
                 return;
             }
-
+            console.error("scope", scope);
             // Create a snapshot of the event before the edit for the undo history.
             const originalPayload = {
                 id: originalEvent.id,
@@ -414,6 +414,7 @@ const App = () => {
                 frequency: eventData.frequency || 'never',
                 frequency_total: eventData.frequency_total || null,
             }
+            console.error("save event being called with", payload);
             await saveEvent(eventId, payload);
 
             // Commit the edit action with both original and updated states.
@@ -694,6 +695,7 @@ const App = () => {
                             link: eventForSeriesModal.extendedProps.link,
                         };
                         saveEventAndCommit(updatedEvent, editType);
+                        console.error("Save and commit" , editType);
                         // The saveEventAndCommit function will close the modal upon success
                     }}
                 />
