@@ -1,6 +1,6 @@
-//const API_BASE_URL = 'http://127.0.0.1:8000/api/schedules';   <-- This is for development only
-const API_BASE_URL = "https://web-production-b1e5.up.railway.app/api/schedules";
-console.log(API_BASE_URL);
+const API_BASE_URL = 'http://127.0.0.1:8000/api/schedules';   
+// Use the environment variable from .env
+
 
 /**
  * A helper function to handle API responses and errors consistently.
@@ -47,7 +47,6 @@ export const fetchEvents = async (startDate, endDate) => {
  * @returns {Promise<Object>} A promise that resolves with the newly created event data.
  */
 export const addEvent = async (eventPayload) => {
-    console.error(eventPayload);
     try {
         const response = await fetch(`${API_BASE_URL}/`, {
             method: 'POST',

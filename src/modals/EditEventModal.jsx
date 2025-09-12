@@ -9,7 +9,7 @@ const isLeapYear = (year) => {
 };
 
 // Main component for the event editing modal.
-export default function EditEventModal({ isOpen, onClose, onUpdateEvent, onDeleteEvent, event }) {
+export default function EditEventModal({ isOpen, onClose, onUpdateEvent, onDeleteEvent, event, selectedTimezone }) {
     // State to hold the form data for the event.
     const [formData, setFormData] = useState({
         title: '',
@@ -42,6 +42,8 @@ export default function EditEventModal({ isOpen, onClose, onUpdateEvent, onDelet
     const [showSaveDropdown, setShowSaveDropdown] = useState(false);
     // State to control the visibility of the delete action dropdown.
     const [showDeleteDropdown, setShowDeleteDropdown] = useState(false);
+
+
 
     // Constant values for maximum allowed length of input fields.
     const maxTitleLength = 30;
@@ -193,6 +195,7 @@ export default function EditEventModal({ isOpen, onClose, onUpdateEvent, onDelet
             setErrors(prev => ({ ...prev, general: "The selected date or time is invalid." }));
             return;
         }
+        const zonedDateTime = combinedDateTime.setZone(selectedTimezone);
 
         // Calculate total duration in minutes.
         const totalMinutes = Number(formData.durationHours) * 60 + Number(formData.durationMinutes);
@@ -211,12 +214,11 @@ export default function EditEventModal({ isOpen, onClose, onUpdateEvent, onDelet
                 totalRepeatsInDays = formData.frequencyUnit === 'weeks' ? parsedFrequencyTotal * 7 : parsedFrequencyTotal;
             }
         }
-      
         // Construct the payload to be sent to the backend.
         const payload = {
             id: event.id,
             title: formData.title,
-            datetime: combinedDateTime.toISO({ includeOffset: true }),
+            datetime: zonedDateTime.toISO({ includeOffset: true }),
             duration: totalMinutes,
             link: formData.link,
             notes: formData.notes,

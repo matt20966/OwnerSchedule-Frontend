@@ -384,12 +384,12 @@ const App = () => {
                 showBanner('Original event not found.', 'error');
                 return;
             }
-            console.error("scope", scope);
+            
             // Create a snapshot of the event before the edit for the undo history.
             const originalPayload = {
                 id: originalEvent.id,
                 title: originalEvent.title,
-                datetime: originalEvent.start.toISOString(),
+                datetime: eventData.datetime,
                 duration: parseDurationToMinutes(originalEvent.duration), // Convert back to minutes
                 notes: originalEvent.notes,
                 link: originalEvent.link,
@@ -399,22 +399,18 @@ const App = () => {
             const minutes = eventData.duration % 60;
             const formattedDuration = `PT${hours}H${minutes}M`;
 
-            const newIsoString = DateTime.fromISO(eventData.datetime)
-                .setZone(selectedTimezone, { keepLocalTime: true })
-                .toISO();
-
             // This payload structure matches the Django backend's `edit_event` action.
             const payload = {
                 edit_type: scope,
                 title: eventData.title,
-                datetime: newIsoString,
+                datetime: eventData.datetime,
                 duration: formattedDuration,
                 notes: eventData.notes || null,
                 link: eventData.link || null,
                 frequency: eventData.frequency || 'never',
                 frequency_total: eventData.frequency_total || null,
             }
-            console.error("save event being called with", payload);
+
             await saveEvent(eventId, payload);
 
             // Commit the edit action with both original and updated states.
@@ -423,7 +419,6 @@ const App = () => {
                 originalEvent: originalPayload,
                 updatedEvent: { id: eventId, ...payload },
             });
-
             setEditEvent(null);
             setViewEvent(null);
             setIsEditSeriesModalOpen(false); // Close the series modal after the action is committed
@@ -671,6 +666,7 @@ const App = () => {
                     event={editEvent}
                     onUpdateEvent={saveEventAndCommit}
                     onDeleteEvent={deleteEventAndCommit}
+                    selectedTimezone={selectedTimezone}
                 />
                 <SettingsModal
                     isOpen={isSettingsModalOpen}
@@ -683,19 +679,19 @@ const App = () => {
                     onCancel={() => setIsEditSeriesModalOpen(false)}
                     event={eventForSeriesModal} // Pass the event state to the modal
                     onConfirm={(editType) => {
-                        // This function is for handling the user's choice inside the modal
                         const updatedEvent = {
                             id: eventForSeriesModal.id,
                             title: eventForSeriesModal.title,
                             // Use the start date from the moved/resized event
-                            datetime: DateTime.fromJSDate(eventForSeriesModal.start).setZone(selectedTimezone, { keepLocalTime: true }).toISO(),
+                            datetime: DateTime.fromJSDate(eventForSeriesModal.start).setZone(selectedTimezone).toISO(),
                             // Calculate the new duration
                             duration: (eventForSeriesModal.end.getTime() - eventForSeriesModal.start.getTime()) / (1000 * 60),
+                            frequency: eventForSeriesModal.extendedProps.series.frequency,
+                            frequency_total: eventForSeriesModal.extendedProps.series.frequency_total,
                             notes: eventForSeriesModal.extendedProps.notes,
                             link: eventForSeriesModal.extendedProps.link,
                         };
                         saveEventAndCommit(updatedEvent, editType);
-                        console.error("Save and commit" , editType);
                         // The saveEventAndCommit function will close the modal upon success
                     }}
                 />

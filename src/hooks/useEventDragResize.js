@@ -20,9 +20,6 @@ export const useEventDragResize = (saveEventAndCommit, selectedTimezone, onOpenS
     const onEventDrop = useCallback(
         (info) => {
             const { event, oldEvent } = info;
-
-            // Check if the event is a recurring event by checking for a series_id
-            console.error(event.extendedProps.series);
             if (event.extendedProps.series != null) {
                 onOpenSeriesModal(event);
                 info.revert(); // Revert the visual change until the user makes a choice in the modal
@@ -32,9 +29,9 @@ export const useEventDragResize = (saveEventAndCommit, selectedTimezone, onOpenS
             // If it's a single, non-recurring event, save it immediately
             const duration = (event.end.getTime() - event.start.getTime()) / (1000 * 60);
             const datetime = DateTime.fromJSDate(event.start)
-                .setZone(selectedTimezone, { keepLocalTime: true })
+                .setZone(selectedTimezone)
                 .toISO();
-
+   
             const updatedEvent = {
                 ...event.extendedProps,
                 id: event.id,
