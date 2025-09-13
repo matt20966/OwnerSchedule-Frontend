@@ -121,3 +121,7 @@ export const formatEventsForCalendar = (data, showExpanded) => {
     return formattedEvents;
 };
 
+// Helper function to determine if a year is a leap year.
+export const isLeapYear = (year) => {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+};

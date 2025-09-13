@@ -233,6 +233,8 @@ body {
   z-index: 9999 !important;
 }
 
+
+
 .fc {
   font-family: 'Inter', sans-serif;
 }
@@ -287,7 +289,7 @@ body {
 
 .fc .fc-now-indicator {
   border-color: var(--color-error);
-  border-width: 2px;
+  border-width: 1px;
 }
 
 /* This targets events in the time grid view, forcing them to stack correctly */
@@ -423,6 +425,20 @@ body {
   background: transparent; /* optional: just in case */
 }
 
+.fc-timegrid-slot {
+    background-color: #f9fafb; /* very light gray */
+}
+
+.fc-event.fc-event-dragging {
+    opacity: 0.7;
+    transform: scale(1.05);
+}
+
+
+.fc-timegrid-slot:nth-child(even) {
+    background-color: #ffffff;
+}
+
 
 .nav-button:focus,
 .settings-button:focus,
@@ -470,6 +486,8 @@ a:active {
   color: white;
   box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
 }
+
+
 
 .cancel-button {
   background-color: #f1f5f9;
@@ -526,6 +544,36 @@ a:active {
     padding: 4px 8px;
   }
 }
+
+.now-indicator-time-label {
+  position: absolute;
+  right: 0px; /* Push the label further left of the red line */
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 0.8em;
+  font-weight: bold;
+  color: #fff;
+  background-color: #f16164; /* Stands out */
+  padding: 2px 6px;
+  border-radius: 10px;
+  white-space: nowrap; /* Prevent wrapping */
+  z-index: 1000; /* Ensure it's above everything */
+}
+
+
+/* Moves the Now Indicator time label to be inside the grid */
+.fc .fc-timegrid-now-indicator-arrow {
+  display: none; /* Hides the arrow */
+}
+
+.fc .fc-timegrid-now-indicator-arrow + .fc-timegrid-now-indicator-time {
+  left: 0; /* Aligns the label to the start of the grid */
+  background: none; /* Removes the red background on the label */
+  color: inherit; /* Inherits the calendar's text color */
+}
+
+
+
 
 /* Highlight the entire week of the selected day */
 .custom-date-picker .week-selected {

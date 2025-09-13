@@ -64,7 +64,8 @@ const App = () => {
 
     // The current set of events to display on the calendar.
     const [events, setEvents] = useState([]);
-
+    // State to hold the initial event data for the AddEventModal
+    const [eventForAddModal, setEventForAddModal] = useState(null);
     // The current view of the calendar (e.g., 'timeGridWeek'), persisted in localStorage.
     const [currentView, setCurrentView] = useState(() => localStorage.getItem('calendarView') || 'timeGridWeek');
 
@@ -89,7 +90,7 @@ const App = () => {
     const [viewDates, setViewDates] = useState({ start: null, end: null });
 
     // --- REFS & MEMOIZED VALUES ---
-
+    const lastClickTime = useRef(0);
     // A ref to access the FullCalendar component's API directly.
     const calendarRef = useRef(null);
 
@@ -109,7 +110,7 @@ const App = () => {
             return () => clearTimeout(timer); // Cleanup on component unmount or if banner changes.
         }
     }, [banner]);
-
+    
     /**
      * Shows a notification banner.
      * @param {string} message - The message to display.
@@ -484,6 +485,35 @@ const App = () => {
 
     // --- FULLCALENDAR CALLBACKS ---
 
+    /**
+     * Handles clicking or double-clicking a date/timeslot on the calendar.
+     * @param {object} dateClickInfo - The date click object from FullCalendar.
+     */
+    const handleDateClick = (dateClickInfo) => {
+        // FullCalendar's dateClick event doesn't directly support dblclick.
+        // We can simulate it by checking if a click occurs within a short time of the last one.
+        const dblClickThreshold = 300; // milliseconds
+        const now = Date.now();
+        
+        if (now - lastClickTime.current < dblClickThreshold) {
+            // Double-click detected!
+            
+            // Get the clicked date/time. The .date is a native Date object.
+            const clickedDateTime = DateTime.fromJSDate(dateClickInfo.date);
+            
+            // Set the initial event data to pass to the modal
+            const initialEventData = {
+                datetime: clickedDateTime.toISO(),
+                duration: 60, // Default duration in minutes
+            };
+
+            setIsAddModalOpen(true);
+            setEventForAddModal(initialEventData);
+            
+        }
+        lastClickTime.current = now;
+    };
+
     // Pass the new handleOpenSeriesModal callback to the custom hook
     const { onEventDrop, onEventResize } = useEventDragResize(saveEventAndCommit, selectedTimezone, handleOpenSeriesModal);
 
@@ -528,6 +558,7 @@ const App = () => {
         );
     }, [slotDuration]);
 
+
     /**
      * Memoizes the FullCalendar component to prevent it from re-rendering
      * unless its key props (like `events` or callbacks) change. This is a
@@ -536,6 +567,7 @@ const App = () => {
     const MemoizedCalendar = useMemo(() => {
         return (
             <FullCalendar
+                lazyFetching={true}
                 eventDidMount={(info) => {
                     if (info.event.extendedProps.hasConflict) {
                         // a tooltip on hover for overlapping events
@@ -553,6 +585,7 @@ const App = () => {
                 eventResize={onEventResize}
                 eventClick={handleEventClick}
                 datesSet={handleDatesSet}
+                dateClick={handleDateClick}
                 headerToolbar={false} // Disable default header, using a custom one.
                 dayHeaderFormat={{ weekday: 'short', day: 'numeric' }}
                 slotMinTime="00:00:00"
@@ -566,8 +599,20 @@ const App = () => {
                 eventOverlap={true}
                 slotDuration={slotDuration}
                 displayEventEnd={true}
-                eventContent={renderEventContent}
-            />
+                eventContent={renderEventContent} 
+                nowIndicatorContent={() => {
+                const now = DateTime.local().setZone(selectedTimezone);
+                const formattedTime = now.toFormat('h:mm');
+                
+                return (
+                    <div className="now-indicator-content-wrapper">
+                    <div className="now-indicator-time-label">
+                        {formattedTime}
+                    </div>
+                    </div>
+                );
+            }}
+           />
         );
     }, [events, referenceDate, handleEventClick, handleDatesSet, selectedTimezone, currentView, slotDuration, renderEventContent]);
 
@@ -652,6 +697,7 @@ const App = () => {
                     isOpen={isAddModalOpen}
                     onClose={() => setIsAddModalOpen(false)}
                     onAddEvent={addEventAndCommit}
+                    initialEventData={eventForAddModal}
                 />
                 <ViewEventModal
                     isOpen={!!viewEvent}

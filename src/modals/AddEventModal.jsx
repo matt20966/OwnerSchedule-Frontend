@@ -2,16 +2,7 @@ import React, { useState, useEffect } from "react";
 import { DateTime } from 'luxon';
 import styles from './AddEditModal.module.css';
 import { CloseIcon, ErrorText } from "./UIComponents.jsx";
-
-/**
- * Helper function to determine if a given year is a leap year.
- * This is used for validating the 'February 29th' date selection.
- * @param {number} year - The year to check.
- * @returns {boolean} True if the year is a leap year, otherwise false.
- */
-const isLeapYear = (year) => {
-    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
-};
+import { isLeapYear } from '../utils/utils.js'; // The new import statement
 
 /**
  * A modal component for adding new events.
@@ -107,7 +98,7 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
     useEffect(() => {
         const newErrors = {};
         const { title, date, startTime, notes, durationHours, durationMinutes, link, frequency, frequencyTotal } = formData;
-        
+
         // --- Required fields validation ---
         if (!title.trim()) {
             newErrors.title = "Title is required.";
@@ -180,7 +171,7 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
             setErrors(prev => ({ ...prev, general: "Please fix the validation errors before submitting." }));
             return;
         }
-        
+
         // Combine date and time to create a Luxon DateTime object for validation
         const combinedDateTime = DateTime.fromISO(`${formData.date}T${formData.startTime}`);
         if (!combinedDateTime.isValid) {
@@ -248,13 +239,13 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
                         <label className={styles.label} htmlFor="new-event-title">
                             Title <span className={styles.required}>*</span>
                         </label>
-                        <input 
+                        <input
                             className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
-                            id="new-event-title" 
-                            type="text" 
+                            id="new-event-title"
+                            type="text"
                             name="title"
-                            value={formData.title} 
-                            onChange={handleInputChange} 
+                            value={formData.title}
+                            onChange={handleInputChange}
                             placeholder="e.g., Team Standup"
                             maxLength={maxTitleLength}
                         />
@@ -267,13 +258,13 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
                             <label className={styles.label} htmlFor="new-event-date">
                                 Date <span className={styles.required}>*</span>
                             </label>
-                            <input 
+                            <input
                                 className={`${styles.input} ${errors.date ? styles.inputError : ''}`}
-                                id="new-event-date" 
-                                type="date" 
-                                name="date" 
-                                value={formData.date} 
-                                onChange={handleInputChange} 
+                                id="new-event-date"
+                                type="date"
+                                name="date"
+                                value={formData.date}
+                                onChange={handleInputChange}
                             />
                             <ErrorText message={errors.date} />
                         </div>
@@ -282,13 +273,13 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
                             <label className={styles.label} htmlFor="new-event-time">
                                 Start Time <span className={styles.required}>*</span>
                             </label>
-                            <input 
+                            <input
                                 className={`${styles.input} ${errors.startTime ? styles.inputError : ''}`}
-                                id="new-event-time" 
-                                type="time" 
-                                name="startTime" 
-                                value={formData.startTime} 
-                                onChange={handleInputChange} 
+                                id="new-event-time"
+                                type="time"
+                                name="startTime"
+                                value={formData.startTime}
+                                onChange={handleInputChange}
                             />
                             <ErrorText message={errors.startTime} />
                         </div>
@@ -297,13 +288,13 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
                     {/* Link field */}
                     <div className={styles.field}>
                         <label className={styles.label} htmlFor="new-event-link">Link</label>
-                        <input 
+                        <input
                             className={`${styles.input} ${errors.link ? styles.inputError : ''}`}
-                            id="new-event-link" 
-                            type="url" 
+                            id="new-event-link"
+                            type="url"
                             name="link"
-                            value={formData.link} 
-                            onChange={handleInputChange} 
+                            value={formData.link}
+                            onChange={handleInputChange}
                             placeholder="e.g., https://zoom.uk/j/123456789"
                         />
                         <ErrorText message={errors.link} />
@@ -312,12 +303,12 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
                     {/* Notes field */}
                     <div className={styles.field}>
                         <label className={styles.label} htmlFor="new-event-notes">Notes</label>
-                        <textarea 
+                        <textarea
                             className={`${styles.input} ${styles.textarea} ${errors.notes ? styles.inputError : ''}`}
-                            id="new-event-notes" 
+                            id="new-event-notes"
                             name="notes"
-                            value={formData.notes} 
-                            onChange={handleInputChange} 
+                            value={formData.notes}
+                            onChange={handleInputChange}
                             placeholder="e.g., Meeting with Hagrid"
                             maxLength={maxNotesLength}
                         />
@@ -363,7 +354,7 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
                             <option value="fortnightly">Fortnightly</option>
                         </select>
                     </div>
-                    
+
                     {/* Conditional rendering for recurrence options */}
                     {formData.frequency !== 'never' && (
                         <div className={styles.field}>
@@ -381,7 +372,7 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
                                     <option value="days">days</option>
                                     <option value="weeks">weeks</option>
                                 </select>
-                                <button 
+                                <button
                                     className={`${styles.button} ${styles.foreverButton} ${formData.frequencyTotal === 'forever' ? styles.activeButton : ''}`}
                                     onClick={() => setFormData(prev => ({ ...prev, frequencyTotal: "forever" }))}
                                 >
@@ -392,7 +383,7 @@ const AddEventModal = ({ isOpen, onClose, onAddEvent }) => {
                         </div>
                     )}
                 </div>
-                
+
                 {/* Action buttons */}
                 <div className={styles.actions}>
                     <button className={`${styles.button} ${styles.cancelButton}`} onClick={onClose}>

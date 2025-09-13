@@ -1,12 +1,10 @@
+// UIComponents/EditEventModal.jsx
+
 import React, { useState, useEffect } from "react";
 import { DateTime } from 'luxon';
 import styles from './AddEditModal.module.css';
 import { CloseIcon, ErrorText } from "./UIComponents.jsx";
-
-// Helper function to determine if a year is a leap year.
-const isLeapYear = (year) => {
-    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
-};
+import { isLeapYear } from '../utils/utils.js'; // The new import statement
 
 // Main component for the event editing modal.
 export default function EditEventModal({ isOpen, onClose, onUpdateEvent, onDeleteEvent, event, selectedTimezone }) {
@@ -42,8 +40,6 @@ export default function EditEventModal({ isOpen, onClose, onUpdateEvent, onDelet
     const [showSaveDropdown, setShowSaveDropdown] = useState(false);
     // State to control the visibility of the delete action dropdown.
     const [showDeleteDropdown, setShowDeleteDropdown] = useState(false);
-
-
 
     // Constant values for maximum allowed length of input fields.
     const maxTitleLength = 30;
@@ -112,6 +108,7 @@ export default function EditEventModal({ isOpen, onClose, onUpdateEvent, onDelet
         } else {
             const selectedDate = DateTime.fromISO(date);
             if (selectedDate.isValid) {
+                // **The logic here is unchanged, but it now calls the imported function.**
                 if (selectedDate.month === 2 && selectedDate.day === 29) {
                     if (!isLeapYear(selectedDate.year)) {
                         newErrors.date = `You can't select February 29th in ${selectedDate.year}. It is not a leap year.`;
