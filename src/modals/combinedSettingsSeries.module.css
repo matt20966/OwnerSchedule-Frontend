@@ -1,0 +1,414 @@
+/*
+
+ModalStyles.css
+
+This unified stylesheet provides a consistent set of styles for all modal
+
+components in the application, combining the best features from both
+
+the settings modal and the edit series modal. It uses keyframe animations,
+
+a clear layout structure, and robust styles for form elements and buttons.
+*/
+
+/* --- Keyframe Animations --- */
+
+/*
+
+@keyframes fadeInScaleUp
+
+A combined animation that fades the modal in and scales it up for a
+
+dynamic and modern "pop-in" effect.
+*/
+@keyframes fadeInScaleUp {
+from {
+opacity: 0;
+transform: translateY(20px) scale(0.98);
+}
+to {
+opacity: 1;
+transform: translateY(0) scale(1);
+}
+}
+
+/*
+
+@keyframes fadeIn
+
+Animates the overlay to fade in from transparent to opaque.
+*/
+@keyframes fadeIn {
+from {
+opacity: 0;
+}
+to {
+opacity: 1;
+}
+}
+
+/* --- Modal Structure and Layout --- */
+
+/*
+
+.modal-overlay
+
+Styles the full-screen backdrop for the modal. It centers the modal, applies a
+
+semi-transparent dark background, and uses a subtle backdrop blur.
+*/
+.modal-overlay {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: rgba(17, 24, 39, 0.5);
+backdrop-filter: blur(6px);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 1000;
+animation: fadeIn 0.3s ease;
+}
+
+/*
+
+.modal-container
+
+Styles the main container for the modal's content. It features a clean
+
+design with a white background, rounded corners, and a subtle box shadow.
+*/
+.modal-container {
+background-color: #ffffff;
+padding: 40px;
+border-radius: 24px;
+max-width: 550px;
+width: 90%;
+box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+font-family: 'Inter', sans-serif;
+position: relative;
+animation: fadeInScaleUp 0.3s ease-out forwards;
+}
+
+/* --- Header Section --- */
+
+/*
+
+.modal-header
+
+Defines the layout for the modal's header, containing the title and close button.
+*/
+.modal-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+border-bottom: 1px solid #e0e7ff;
+padding-bottom: 16px;
+margin-bottom: 24px;
+}
+
+/*
+
+.modal-title
+
+Styles the main title of the modal.
+*/
+.modal-title {
+margin: 0;
+font-size: 26px;
+font-weight: 700;
+color: #1e40af;
+}
+
+/*
+
+.close-button
+
+Styles the interactive close button. It's a transparent button with a hover
+
+effect that changes background, color, and size.
+*/
+.close-button {
+background-color: transparent;
+border: none;
+cursor: pointer;
+padding: 8px;
+color: #94a3b8;
+border-radius: 50%;
+transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+/* Hover state for the close button */
+.close-button:hover {
+background-color: #f1f5f9;
+color: #64748b;
+transform: scale(1.1);
+}
+
+/* --- Form Content and Fields --- */
+
+/*
+
+.form-content
+
+A flex container for the main form elements, managing their vertical spacing.
+*/
+.form-content {
+display: flex;
+flex-direction: column;
+gap: 24px;
+}
+
+/*
+
+.field
+
+Container for each form field, typically a label and an input.
+*/
+.field {
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+/*
+
+.label
+
+Styles the text label for form inputs.
+*/
+.label {
+font-size: 15px;
+font-weight: 600;
+color: #475569;
+}
+
+/*
+
+.input
+
+Styles for standard text inputs. Includes hover/focus effects for better user
+
+feedback and accessibility.
+*/
+.input {
+width: 100%;
+padding: 12px 16px;
+border-radius: 12px;
+border: 1px solid #dbeafe;
+font-size: 16px;
+color: #0f172a;
+background-color: #f9fafb;
+outline: none;
+font-family: inherit;
+transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Focus state for the input field */
+.input:focus {
+border-color: #93c5fd;
+box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* --- Custom Checkbox and Radio Styles --- */
+
+/*
+
+.option-container
+
+A unified wrapper for both custom checkbox and radio button groups.
+*/
+.option-container {
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+
+.option-group {
+display: flex;
+gap: 16px;
+align-items: center;
+}
+
+/*
+
+.option-label
+
+Base styles for the labels of both custom checkboxes and radio buttons.
+*/
+.option-label {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 12px 0;
+cursor: pointer;
+user-select: none;
+font-weight: 500;
+color: #334155;
+outline: none;
+}
+
+/*
+
+.hidden-input
+
+Hides the native checkbox/radio input while keeping it accessible.
+*/
+.hidden-input {
+position: absolute;
+opacity: 0;
+width: 0;
+height: 0;
+}
+
+/*
+
+.custom-radio, .custom-checkbox
+
+Shared styles for the visual representation of custom inputs.
+*/
+.custom-radio,
+.custom-checkbox {
+flex-shrink: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.2s ease;
+}
+
+/* Custom Checkbox */
+.custom-checkbox {
+width: 20px;
+height: 20px;
+border-radius: 6px;
+border: 2px solid #cbd5e1;
+background-color: #f1f5f9;
+}
+
+/* Checkmark within the custom checkbox */
+.checkmark {
+width: 10px;
+height: 10px;
+background-color: white;
+border-radius: 50%;
+transform: scale(0);
+transition: transform 0.2s ease-in-out;
+}
+
+.hidden-input:checked + .custom-checkbox {
+background-color: #94a3b8;
+border-color: #94a3b8;
+}
+
+.hidden-input:checked + .custom-checkbox .checkmark {
+transform: scale(1);
+}
+
+/* Custom Radio Button */
+.custom-radio {
+width: 20px;
+height: 20px;
+border-radius: 50%;
+border: 2px solid #cbd5e1;
+background-color: #f1f5f9;
+}
+
+/* Inner circle of the radio button */
+.custom-radio-inner {
+width: 10px;
+height: 10px;
+background-color: #3b82f6;
+border-radius: 50%;
+transform: scale(0);
+transition: transform 0.2s ease;
+}
+
+.hidden-input:checked + .custom-radio {
+border-color: #3b82f6;
+background-color: #e2e8f0;
+}
+
+.hidden-input:checked + .custom-radio .custom-radio-inner {
+transform: scale(1);
+}
+
+/* Accessibility: Adds a focus ring */
+.hidden-input:focus-visible + .custom-radio,
+.hidden-input:focus-visible + .custom-checkbox {
+box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+}
+
+/* --- Action Buttons --- */
+
+/*
+
+.modal-footer
+
+Container for the action buttons at the bottom of the modal.
+*/
+.modal-footer {
+display: flex;
+justify-content: flex-end;
+gap: 16px;
+margin-top: 32px;
+border-top: 1px solid #e0e7ff;
+padding-top: 24px;
+}
+
+/*
+
+.button
+
+Base styles for all buttons in the modal. Includes a subtle hover effect.
+*/
+.button {
+padding: 12px 24px;
+border-radius: 12px;
+font-size: 16px;
+font-weight: 600;
+cursor: pointer;
+border: none;
+transition: all 0.2s ease;
+}
+
+/* Hover state for all buttons */
+.button:hover {
+transform: translateY(-2px);
+}
+
+/*
+
+.btn-cancel
+
+Specific styles for the cancel/secondary button.
+*/
+.btn-cancel {
+background-color: #f1f5f9;
+color: #334155;
+}
+
+/* Hover state for the cancel button */
+.btn-cancel:hover {
+background-color: #e2e8f0;
+}
+
+/*
+
+.btn-save
+
+Specific styles for the save/primary button, featuring a gradient background
+
+and a more pronounced box shadow on hover.
+*/
+.btn-save {
+background: linear-gradient(135deg, #6366f1, #3b82f6);
+color: #e2e8f0;
+box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
+}
+
+/* Hover state for the save button */
+.btn-save:hover {
+box-shadow: 0 6px 10px rgba(99, 102, 241, 0.3);
+}
