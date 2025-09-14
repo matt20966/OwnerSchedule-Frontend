@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://web-production-af8a6.up.railway.app/api/schedules/";
+const API_BASE_URL = "https://web-production-af8a6.up.railway.app/api/schedules";
 console.error(API_BASE_URL);
 console.error("geting update");
 
