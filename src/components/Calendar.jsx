@@ -57,7 +57,7 @@ const App = () => {
     // Calendar and event display settings.
     const [selectedTimezone, setSelectedTimezone] = useState('Europe/London');
     const [showExpanded, setShowExpanded] = useState(false); // For recurring events
-    const [slotDuration, setSlotDuration] = useState(() => localStorage.getItem('slotDuration') || '00:30:00');
+    const [slotDuration, setSlotDuration] = useState(() => localStorage.getItem('slotDuration') || '00:15:00');
 
     // The date that the calendar is currently centered on. Initialized to today.
     const [referenceDate, setReferenceDate] = useState(() => DateTime.local({ zone: selectedTimezone }).startOf('day'));
