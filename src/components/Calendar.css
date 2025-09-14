@@ -117,7 +117,7 @@ body {
   padding: 32px;
   overflow-y: auto;
   transition: all 0.3s ease;
-  height: calc(100vh - 10vh);
+  height: calc(100vh - 25vh);
 }
 
 /* Hide scrollbar for Chrome, Safari, and Opera */
